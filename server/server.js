@@ -9,5 +9,5 @@ app.use(express.static(publicPath));
 
 
 app.listen(PORT, () => {
-    console.log(`Server is up on port 3000${port}`);
+    console.log(`Server is up on port ${port}`);
 });
