@@ -23,8 +23,15 @@ io.on('connection', (socket) => {
         if ( !isRealString(params.name) || !isRealString(params.room) ) {
             return callback('Name and room name are required');
         }
+
         let room = params.room.toLowerCase();
 
+        let userList = users.getUserList(room);
+        // let nameArr = userList.filter((user) => user === params.name);
+
+        if (userList.filter((user) => user === params.name).length) {
+            return callback('Display name already in use. Please use another name.')
+        }
 
         socket.join(room);
         users.removeUser(socket.id);
