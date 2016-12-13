@@ -19,24 +19,21 @@ io.on('connection', (socket) => {
     console.log('New user connected');
 
     socket.on('join', (params, callback) => {
-        // socket.leave('The Office Fans');
-
-        // io.emit -> io.to('The Office Fans').emit
-        // socket.broadcast.emit -> socket.broadcast.to('The Office Fans').emot
-        // socket.emit
 
         if ( !isRealString(params.name) || !isRealString(params.room) ) {
             return callback('Name and room name are required');
         }
+        let room = params.room.toLowerCase();
 
-        socket.join(params.room);
+
+        socket.join(room);
         users.removeUser(socket.id);
-        users.addUser(socket.id, params.name, params.room);
+        users.addUser(socket.id, params.name, room);
 
-        io.to(params.room).emit('updateUserList', users.getUserList(params.room));
+        io.to(room).emit('updateUserList', users.getUserList(room));
 
         socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app!'));
-        socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined`));
+        socket.broadcast.to(room).emit('newMessage', generateMessage('Admin', `${params.name} has joined`));
 
         callback();
     });
@@ -46,7 +43,6 @@ io.on('connection', (socket) => {
 
         if (user && isRealString(message.text)) {
             io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
-            console.log(user);
         }
 
         callback();
