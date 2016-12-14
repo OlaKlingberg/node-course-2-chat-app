@@ -16,7 +16,7 @@ var users = new Users();
 app.use(express.static(publicPath));
 
 io.on('connection', (socket) => {
-    console.log('New user connected');
+    socket.emit('openRooms', users.getOpenRooms());
 
     socket.on('join', (params, callback) => {
 
@@ -24,20 +24,26 @@ io.on('connection', (socket) => {
             return callback('Name and room name are required');
         }
 
-        let room = params.room.toLowerCase();
+        let room = params.room;
+        let openRooms = users.getOpenRooms().map((openRoom) => openRoom.toLowerCase());
+        let roomIndex = openRooms.indexOf(room.toLowerCase());
+        if (roomIndex >= 0) {
+            room = users.getOpenRooms()[roomIndex];
+        }
 
         let userList = users.getUserList(room);
-        // let nameArr = userList.filter((user) => user === params.name);
 
         if (userList.filter((user) => user === params.name).length) {
-            return callback('Display name already in use. Please use another name.')
+            return callback('Display name already in use. Please use another name.');
         }
 
         socket.join(room);
         users.removeUser(socket.id);
         users.addUser(socket.id, params.name, room);
 
-        io.to(room).emit('updateUserList', users.getUserList(room));
+        io.emit('openRooms', users.getOpenRooms());
+
+        io.to(room).emit('updateUserList', room, users.getUserList(room));
 
         socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app!'));
         socket.broadcast.to(room).emit('newMessage', generateMessage('Admin', `${params.name} has joined`));
@@ -46,7 +52,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createMessage', (message, callback) => {
-        var user = users.getUser(socket.id);
+        let user = users.getUser(socket.id);
 
         if (user && isRealString(message.text)) {
             io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
@@ -56,7 +62,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('createLocationMessage', (coords) => {
-        var user = users.getUser(socket.id);
+        let user = users.getUser(socket.id);
 
         if (user) {
             io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
@@ -64,11 +70,12 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        var user = users.removeUser(socket.id);
+        let user = users.removeUser(socket.id);
 
         if (user) {
             io.to(user.room).emit('updateUserList', users.getUserList(user.room));
             io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left.`));
+            io.emit('openRooms', users.getOpenRooms());
         }
     });
 });
@@ -77,3 +84,4 @@ io.on('connection', (socket) => {
 server.listen(port, () => {
     console.log(`Server is up on port ${port}`);
 });
+

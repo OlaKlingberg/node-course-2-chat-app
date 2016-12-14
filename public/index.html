@@ -10,23 +10,38 @@
 </head>
 
 <body class="centered-form">
-    <div class="centered-form__form">
-        <form action="/chat.html">
-            <div class="form-field">
-                <h3>Join a Chat</h3>
-            </div>
-            <div class="form-field">
-                <label>Display name</label>
-                <input type="text" name="name" autofocus />
-            </div>
-            <div class="form-field">
-                <label>Room name</label>
-                <input type="text" name="room" />
-            </div>
-            <div class="form-field">
-                <button>Join</button>
-            </div>
-        </form>
-    </div>
+<div class="centered-form__form">
+    <form action="/chat.html">
+        <div class="form-field">
+            <h3>Join a Chat</h3>
+        </div>
+        <div class="form-field">
+            <label>Display name</label>
+            <input type="text" name="name" autofocus/>
+        </div>
+        <div class="form-field">
+            <label>Room name</label>
+            <input type="text" name="room" id="room"/>
+        </div>
+        <div class="form-field">
+            <label>Open rooms</label>
+            <select name="open-rooms" id="open-rooms">
+            </select>
+        </div>
+        <div class="form-field">
+            <button>Join</button>
+        </div>
+    </form>
+</div>
+
+<script id="open-rooms-template" type="text/template">
+    <option value="{{room}}">{{room}}</option>
+</script>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/libs/jquery-3.1.1.min.js"></script>
+<script src="/js/libs/mustache.js"></script>
+<!--<script src="/js/libs/deparam.js"></script>-->
+<script src="/js/index.js"></script>
 </body>
 </html>
